@@ -3,9 +3,8 @@
 
 #include <fstream>
 #include <string>
-#include <sys/stat.h>
 #include <unordered_map>
-#include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 #include "matplotlib.h"
 
 /**** type definitions ****/
@@ -17,16 +16,62 @@ typedef std::unordered_map<std::string, size_t> FreqDict;   // dictionary of fre
 enum CLASS {SPAM, HAM};
 
 namespace plt = matplotlibcpp;
+namespace fs = boost::filesystem;
 
 /**** function prototypes ****/
-std::vector<std::string> get_files_in_folder(FilePath folder_path, std::string extension = ".txt");
-WordList get_words_in_file(FilePath file_path);
-FreqDict get_word_freq(FileList files);
-void plot_probabilities(ProbDict& prob_dict);
+FileList get_files_in_folder(const FilePath&, const std::string& extension = ".txt");
+WordList get_words_in_file(const FilePath&);
+FreqDict get_word_freq(const FileList& files);
+void plot_probabilities(const ProbDict& prob_dict);
 
 /**** functions ****/
+FileList get_files_in_folder(const FilePath& dir_path, const std::string& extension)
+{
+    FileList file_list;
+    fs::path path = fs::system_complete(dir_path);
 
-void plot_probabilities(ProbDict& prob_dict)
+    if (!path.empty())
+    {
+        fs::directory_iterator end;
+
+        for (auto i = fs::directory_iterator(path); i != end; ++i)
+        {
+            if (fs::extension(i->path()) == extension)
+                file_list.push_back(i->path().string());
+        }
+    }
+
+    return file_list;
+}
+
+WordList get_words_in_file(const FilePath& file_path)
+{
+    WordList word_list;
+    std::ifstream file(file_path);
+
+    std::string word;
+    while (file >> word)
+        word_list.push_back(word);
+
+    return word_list;
+}
+
+FreqDict get_word_freq(const FileList& files)
+{
+    FreqDict freq_dict;
+
+    for (const FilePath& file : files)
+    {
+        WordList words = get_words_in_file(file);
+        for (const std::string& word : words)
+            if (!word.empty())
+                ++freq_dict[word];
+    }
+
+    return freq_dict;
+}
+
+void plot_probabilities(const ProbDict& prob_dict)
 {
 //    std::vector<double> x, y;
 //    size_t lbl_cnt = 1;

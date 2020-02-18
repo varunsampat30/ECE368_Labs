@@ -3,11 +3,12 @@
 #include "util.h"
 
 #define SPAM_PRIOR 0.5
+#define HAM_PRIOR (1 - SPAM_PRIOR)
 
 /**** function prototypes ****/
 std::array<double, 2> learn_distributions(std::array<FileList, 2>);
 std::pair<CLASS, double> classify_new_email(FilePath, std::array<ProbDict, 2>,
-        std::array<double, 2> prior_by_category = {SPAM_PRIOR, 1-SPAM_PRIOR});
+        std::array<double, 2> prior_by_category = {SPAM_PRIOR, HAM_PRIOR});
 
 /**** functions ****/
 //def learn_distributions(file_lists_by_category):
@@ -57,6 +58,5 @@ std::pair<CLASS, double> classify_new_email(FilePath, std::array<ProbDict, 2>,
 /**** main ****/
 int main()
 {
-    std::cout << "Hello, World!" << std::endl;
     return 0;
 }
