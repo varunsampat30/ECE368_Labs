@@ -122,9 +122,13 @@ def predictionDistribution(x,beta,sigma2,mu,Cov,x_train,z_train):
     x_modified = np.array(x_modified)
     x_t = np.transpose(x_modified)
     
-
+    
     z_mu = np.matmul(np.transpose(mu), x_t)
-
+    
+    """
+    coefficients of the regression (w) has covariance of Sigma_{w|y}, 
+    then the variance of y=wx will be x^T * Sigma_{w|y} * x
+    """
     z_var = np.matmul(x_modified, np.matmul(Cov, x_t))
     
     # uncertainty is along the diagonals
@@ -134,7 +138,24 @@ def predictionDistribution(x,beta,sigma2,mu,Cov,x_train,z_train):
         uncertainty[i] = z_var[i][i]
     """
     uncertainty = z_var.diagonal()
+    uncertainty.setflags(write=1) # make this writetable
+    
+    """
+    recall z = a1*x + a0 + w
+    uncertainty (the var) so far is just the variance of a1*x + a0,
+    must add variance of the noise & take sqrt
+    must take square root
+    """
+    for i in range(len(uncertainty)):
+        uncertainty[i] += sigma2
+    uncertainty = np.sqrt(uncertainty) # std deviation
+    
+    """
+    plotting
+    """
     plt.figure()
+    plt.ylim(-4,4)    
+    plt.xlim(-4,4)
     title = "predict" + str(len(x_train))
     plt.title(title)
     plt.xlabel("Input (x)")
